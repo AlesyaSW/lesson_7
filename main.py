@@ -1,29 +1,42 @@
-
 import zipfile
 import os
+import PyPDF2
+import openpyxl
+
 
 def test_zip_files():
+    file_names = [os.path.abspath('file1.pdf'), os.path.abspath('file2.xlsx'), os.path.abspath('file3.csv')]
+    print(file_names)
 
-    files_to_zip = ["test.xlsx", "test.csv", "test.pdf"]
-
-    for file in files_to_zip:
-        open(file, "w").close()
-
-    with zipfile.ZipFile("resources/test.zip", "w") as zip_file:
-        for file in files_to_zip:
-            zip_file.write(file)
-
-
-    with zipfile.ZipFile("resources/test.zip", "r") as zip_file:
-        for file in files_to_zip:
-            with zip_file.open(file, "r") as f:
-                content = f.read()
-                assert len(content) >= 0, f"{file} is empty"
+    zip_file = zipfile.ZipFile('resources/archive.zip', 'w')
+    for file_name in file_names:
+        if os.path.exists(file_name):
+            zip_file.write(file_name, os.path.basename(file_name))
+        else:
+            print(f"File {file_name} not found!")
+    zip_file.close()
 
 
-    for file in files_to_zip:
-        os.remove(file)
+def test_read_dpf():
+    with zipfile.ZipFile('resources/archive.zip', 'r') as zip_file:
+        with zip_file.open('file1.pdf', 'r') as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            assert len(pdf_reader.pages) == 10, "PDF file should have 10 pages."
 
 
-    file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "resources/test.zip")
-    assert os.path.exists(file), f"{file} does not exist"
+def test_read_csv():
+    with zipfile.ZipFile('resources/archive.zip', 'r') as zip_file:
+        with zip_file.open('file3.csv', 'r') as csv_file:
+            count_row = 0
+            for _ in csv_file:
+                count_row += 1
+            assert 7 == count_row
+
+
+def test_read_xlsx():
+    with zipfile.ZipFile('resources/archive.zip', 'r') as zip_file:
+        with zip_file.open('file2.xlsx', 'r') as xlsx_file:
+            book = openpyxl.load_workbook(xlsx_file)
+            sheet = book.active
+            assert 'First Name' in sheet['B1'].value
+            assert 'Dulce' in sheet['B2'].value
