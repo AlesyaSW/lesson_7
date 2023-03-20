@@ -6,7 +6,6 @@ import openpyxl
 
 def test_zip_files():
     file_names = [os.path.abspath('file1.pdf'), os.path.abspath('file2.xlsx'), os.path.abspath('file3.csv')]
-    print(file_names)
 
     zip_file = zipfile.ZipFile('resources/archive.zip', 'w')
     for file_name in file_names:
