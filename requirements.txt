@@ -1,5 +1,4 @@
 pytest
-requirements
 openpyxl
 zipfile
 PyPDF2
